@@ -98,6 +98,7 @@
 		message & string & & Message to be shown to the user. If this field is empty, it will not included in the response. This message is unformatted.\\\hline
 	\end{tabular}
 	\chapter{Album Information}
+	
 	\section{albumlist.php}
 	This API end point allow user retrieves a list of album
 	\subsection{Parameters}
@@ -118,6 +119,31 @@
 		more & boolean & & Is there any further album available for retrieval\\\hline
 		albums & array & album & The albums retrieved from the request. \see{obj:album}\\\hline
 	\end{tabular}
+	
+	\section{listimage.php}
+	This API end point allow user retrieves a list of image from an album
+	\subsection{Parameters}
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		album & string & required & The target album going to retrieves inages\\\hline
+		lastID & string & optional & Last album ID retrieved from previous request\\\hline
+		maxSize & number & optional & Maximum number of album to be retrieved.\newline
+		\textbf{IMPORTANT}: Maximum number may be overridden by the server setting \\\hline
+	\end{tabular}
+	\subsection{Return Value}
+	This API call always return HTTP response code 200. With a body in JSON format.
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		size & number & & Number of the album included in this response\\\hline
+		more & boolean & & Is there any further album available for retrieval\\\hline
+		albums & array & album & The albums retrieved from the request. \see{obj:album}\\\hline
+	\end{tabular}
+	
+	
+	
 	\chapter{JSON object definition}
 	\section{album}\label{obj:album}
 	This object carries information about an album
@@ -133,7 +159,7 @@
 		size& number & & Number of images in the album\\\hline
 	\end{tabular}
 	\section{thumbnail}\label{obj:thumbnail}
-	This object carries information about an album
+	This object carries information about an thumbnail
 	
 	\begin{tabular}{|l|l|l|p{10cm}|}
 		\hline
@@ -143,5 +169,21 @@
 		width & number & & Width of the thumbnail in pixel\\\hline
 		height & number & & Height of the thumbnail in pixel\\\hline
 		url & URI & & URL for the thumbnail, MUST be relative to the application base\\\hline
+	\end{tabular}
+	\section{photo}\label{obj:photo}
+	This object carries information about an photo
+	
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		id & string & & Identifier of the photo\\\hline
+		name & string & & File name of the photo\\\hline
+		title & string & & Title of the photo\\\hline
+		desc & string & & Description of the photo \\\hline
+		width & number & & Width of the photo in pixel\\\hline
+		height & number & & Height of the photo in pixel\\\hline
+		thumbnails & object & thumbnail & Selected thumbnail of the photo, \see{obj:thumbnail}\\\hline
+		size & number & & Size in bytes for the full photo\\\hline
+		url & URI & & URL for the photo, MUST be relative to the application base\\\hline
 	\end{tabular}
 \end{document}
