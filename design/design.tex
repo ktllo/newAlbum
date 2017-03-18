@@ -1,0 +1,147 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.725in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsfonts}
+\usepackage{color}
+\usepackage[british]{babel}
+\usepackage[colorlinks]{hyperref}
+\title{API Design for album system Version 0.1.0}
+\author{Lo Kam Tao Leo\\leolo@leolo.org}
+\date{\today}
+\setcounter{tocdepth}{1}
+\setlength{\headheight}{15.2pt}
+\pagestyle{fancy}
+
+\newcommand{\see}[1]{See page \pageref{#1} for more information.}
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\chapter{Preface}
+	The key words ``MUST'', ``MUST NOT'', ``REQUIRED'', ``SHALL'', ``SHALL
+	NOT'', ``SHOULD'', ``SHOULD NOT'', ``RECOMMENDED'',  ``MAY'', and
+	``OPTIONAL'' in this document are to be interpreted as described in
+	RFC 2119.
+	
+	\section{Special JSON data type}
+	\begin{itemize}
+		\item \label{type:URI}URI which is a string, but MUST contain an URI, 
+	\end{itemize}
+	\section{Basic API parameters}
+	All the parameter listed here is accepted by all API end point
+	
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		sessionID & string &  & The assigned sessionID for this session\\\hline
+	\end{tabular}
+	\chapter{User Control}
+	\section{login.php}
+	This API end point allow user log in into the system
+	\subsection{Parameters}
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		userid & string & required & User ID for the user\\\hline
+		password & string & required & plain-text password of the user\\\hline
+		cookie & boolean & optional & 	Is the cookie set upon successful login.\newline
+										Default with ``true''\\\hline
+	\end{tabular}
+	\subsection{Return Value}
+	This API call always return HTTP response code 200. With a body in JSON format.
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		result & string & & 	`SUCCESS' if the login is successful, or\newline
+									`FAIL' otherwise\\\hline
+		sessionID & string & & The assigned sessionID for this session if login is success\\\hline
+		message & string & & Message to be shown to the user. If this field is empty, it will not included in the response. This message is unformatted.\\\hline
+	\end{tabular}
+	\section{logout.php}
+	This API end point allow user log out from the system
+	\subsection{Parameters}
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		sessionID & string & required & The assigned sessionID for this session\\\hline
+	\end{tabular}
+	\subsection{Return Value}
+	This API call always return HTTP response code 200. With a body in JSON format.
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		result & string &  & 	`SUCCESS' if the logout is successful, or\newline
+		`FAIL' otherwise\\\hline
+	\end{tabular}
+	\section{pwdchange.php}
+	This API end point allow user changes the password
+	\subsection{Parameters}
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		sessionID & string & required & The assigned sessionID for this session\\\hline
+		old\_password & string & required & plain-text version of the current password of the user\\\hline
+		new\_password & string & required & plain-text version of the new password of the user\\\hline
+	\end{tabular}
+	\subsection{Return Value}
+	This API call always return HTTP response code 200. With a body in JSON format.
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		result & string & always & 	`SUCCESS' if the password change is successful, or\newline
+		`FAIL' otherwise\\\hline
+		message & string & & Message to be shown to the user. If this field is empty, it will not included in the response. This message is unformatted.\\\hline
+	\end{tabular}
+	\chapter{Album Information}
+	\section{albumlist.php}
+	This API end point allow user retrieves a list of album
+	\subsection{Parameters}
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		lastID & string & optional & Last album ID retrieved from previous request\\\hline
+		maxSize & number & optional & Maximum number of album to be retrieved.\newline
+		\textbf{IMPORTANT}: Maximum number may be overridden by the server setting \\\hline
+	\end{tabular}
+	\subsection{Return Value}
+	This API call always return HTTP response code 200. With a body in JSON format.
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		size & number & & Number of the album included in this response\\\hline
+		more & boolean & & Is there any further album available for retrieval\\\hline
+		albums & array & album & The albums retrieved from the request. \see{obj:album}\\\hline
+	\end{tabular}
+	\chapter{JSON object definition}
+	\section{album}\label{obj:album}
+	This object carries information about an album
+	
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		id & string & & Identifier of the album\\\hline
+		name & string & & Name of the album\\\hline
+		thumbnail & object & thumbnail & Album thumbnail. \see{obj:thumbnail}\\\hline
+		desc & string & & Description for this album\\\hline
+		owner & string & & Owner's name for this album\\\hline
+		size& number & & Number of images in the album\\\hline
+	\end{tabular}
+	\section{thumbnail}\label{obj:thumbnail}
+	This object carries information about an album
+	
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		id & string & & Identifier of the thumbnail\\\hline
+		photoId & string & & Which photo this thumbnail is for\\\hline
+		width & number & & Width of the thumbnail in pixel\\\hline
+		height & number & & Height of the thumbnail in pixel\\\hline
+		url & URI & & URL for the thumbnail, MUST be relative to the application base\\\hline
+	\end{tabular}
+\end{document}
