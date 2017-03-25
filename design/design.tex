@@ -24,7 +24,8 @@
 	NOT'', ``SHOULD'', ``SHOULD NOT'', ``RECOMMENDED'',  ``MAY'', and
 	``OPTIONAL'' in this document are to be interpreted as described in
 	RFC 2119.
-	
+	\section{Request method}
+	Unless otherwise specified, the query may made by GET or POST method.
 	\section{Special JSON data type}
 	\begin{itemize}
 		\item \label{type:URI}URI which is a string, but MUST contain an URI, 
@@ -35,10 +36,29 @@
 	\begin{tabular}{|l|ll|p{10cm}|}
 		\hline
 		Name & Type & & Description\\\hline
-		sessionID & string &  & The assigned sessionID for this session\\\hline
+		sessionID & string &  & The assigned sessionID for this session\newline
+		Client MAY send this parameter by cookies instead of a query parameter, but MUST NOT specify this parameter by both query parameter and cookies.\newline
+		Some API end point may REQUIRES this parameter\\\hline
+	\end{tabular}
+	
+	\chapter{Basic Information}
+	\section{info}
+	This API end point provide basic information about the album system
+	\subsection{Parameters}
+	No parameter is required, nor they will be processed
+	\subsection{Return Value}
+	This API call always return HTTP response code 200. With a body in JSON format.
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		version & string & & Version of the software\\\hline
+		server & string & & Name of the server software\\\hline
+		SSL & boolean & & Is SSL/TLS available for this server\\\hline
+		api & string & & API version used by the server. For this version, it is ``0.1.0''\\\hline
 	\end{tabular}
 	\chapter{User Control}
-	\section{login.php}
+	\section{login}
 	This API end point allow user log in into the system
 	\subsection{Parameters}
 	\begin{tabular}{|l|ll|p{10cm}|}
@@ -60,7 +80,7 @@
 		sessionID & string & & The assigned sessionID for this session if login is success\\\hline
 		message & string & & Message to be shown to the user. If this field is empty, it will not included in the response. This message is unformatted.\\\hline
 	\end{tabular}
-	\section{logout.php}
+	\section{logout}
 	This API end point allow user log out from the system
 	\subsection{Parameters}
 	\begin{tabular}{|l|ll|p{10cm}|}
@@ -77,7 +97,7 @@
 		result & string &  & 	`SUCCESS' if the logout is successful, or\newline
 		`FAIL' otherwise\\\hline
 	\end{tabular}
-	\section{pwdchange.php}
+	\section{pwdchange}
 	This API end point allow user changes the password
 	\subsection{Parameters}
 	\begin{tabular}{|l|ll|p{10cm}|}
@@ -99,7 +119,7 @@
 	\end{tabular}
 	\chapter{Album Information}
 	
-	\section{albumlist.php}
+	\section{albumlist}
 	This API end point allow user retrieves a list of album
 	\subsection{Parameters}
 	\begin{tabular}{|l|ll|p{10cm}|}
@@ -110,7 +130,12 @@
 		\textbf{IMPORTANT}: Maximum number may be overridden by the server setting \\\hline
 	\end{tabular}
 	\subsection{Return Value}
-	This API call always return HTTP response code 200. With a body in JSON format.
+	\begin{tabular}{|l|p{10cm}|l|}
+		\hline
+		HTTP Status Code & Meanings & Body content  \\\hline
+		200 & The album is exists, and the request is being processed & JSON\\\hline
+		404 & This album does not exists & Nil\\\hline
+	\end{tabular}
 	\subsection{JSON structure}
 	\begin{tabular}{|l|l|l|p{10cm}|}
 		\hline
@@ -120,19 +145,24 @@
 		albums & array & album & The albums retrieved from the request. \see{obj:album}\\\hline
 	\end{tabular}
 	
-	\section{listimage.php}
+	\section{listimage}
 	This API end point allow user retrieves a list of image from an album
 	\subsection{Parameters}
 	\begin{tabular}{|l|ll|p{10cm}|}
 		\hline
 		Name & Type & & Description\\\hline
-		album & string & required & The target album going to retrieves inages\\\hline
+		album & string & required & The target album going to retrieves images\\\hline
 		lastID & string & optional & Last album ID retrieved from previous request\\\hline
 		maxSize & number & optional & Maximum number of album to be retrieved.\newline
 		\textbf{IMPORTANT}: Maximum number may be overridden by the server setting \\\hline
 	\end{tabular}
 	\subsection{Return Value}
-	This API call always return HTTP response code 200. With a body in JSON format.
+	\begin{tabular}{|l|p{10cm}|l|}
+		\hline
+		HTTP Status Code & Meanings & Body content  \\\hline
+		200 & The album is exists, and the request is being processed & JSON\\\hline
+		404 & This album does not exists & Nil\\\hline
+	\end{tabular}
 	\subsection{JSON structure}
 	\begin{tabular}{|l|l|l|p{10cm}|}
 		\hline
@@ -142,6 +172,104 @@
 		albums & array & album & The albums retrieved from the request. \see{obj:album}\\\hline
 	\end{tabular}
 	
+	\chapter{Album manipulation}
+	
+	\section{albummanipulation}
+	This API end point provide basic album manipulation (\textit{i.e.} add, remove, reorder,changes thumbnails)
+	\subsection{Parameters}
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		sessionID & string & required & The assigned sessionID for this session\\\hline
+		album & string & required & The target album going to manipulates\\\hline
+		operation & string & required & The operation going to perform\newline
+		must be one of following\begin{itemize}
+			\item `ADD' -- To add image to this album
+			\item `REMOVE' -- To remove image from this album
+			\item `REORDER' -- To set a new display sequence for this image
+			\item `THUMBNAIL' -- To set a thumbnail for this album
+		\end{itemize}\\\hline
+		photoid & string & required & Photo involved in this manipulation\\\hline
+		displaySeq & number & & REQUIRED for `ADD' and `REORDER'. This parameter will be ignored for other operation.\newline
+		The number MAY be a fraction to indicate the new sequence is between the closest integers. All image in the album with display sequence bigger than this one will be reordered. \newline Client SHOULD retrieves the album list again to obtain the new sequence number if the given sequence is not an integer.\\\hline
+		thumbnail & string & & REQUIRED for `THUMBNAIL' operation. This parameter will be ignored for other operation. \newline Indicates the new thumbnail for the album.\\\hline
+	\end{tabular}
+	\subsection{Return Value}
+	\begin{tabular}{|l|p{10cm}|l|}
+		\hline
+		HTTP Status Code & Meanings & Body content  \\\hline
+		200 & The operation is processed & JSON\\\hline
+		403 & This album does not belong to the current user & Nil\\\hline
+		500 & This request is malformed & JSON\\\hline
+	\end{tabular}
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		result & string & & ``SUCCESS'' if the operation is successful.\newline
+		``FAIL'' if the operation is failed\newline
+		``ERROR'' if there is error\\\hline
+		message & string & & Human readable description of the result\\\hline
+	\end{tabular}
+	
+	\section{albumupdate}
+	This API end point to update the album information.
+	\subsection{Parameters}
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		sessionID & string & required & The assigned sessionID for this session\\\hline
+		album & string & required & The target album ID going to manipulates\\\hline
+		name & string & optional & Set the name of the album. Remain unchanged if missing\\\hline
+		desc & string & optional & Set the description of the album. Remain unchanged of missing\\\hline
+		thumbnail & string& optional & Set the thumbnail of this album. The selected photo will provide the thumbnail for the album. Remain unchanged if missing.\\\hline
+	\end{tabular}
+	\subsection{Return Value}
+	\begin{tabular}{|l|p{10cm}|l|}
+		\hline
+		HTTP Status Code & Meanings & Body content  \\\hline
+		200 & The operation is processed & JSON\\\hline
+		403 & This album does not belong to the current user & Nil\\\hline
+		500 & This request is malformed & JSON\\\hline
+	\end{tabular}
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		result & string & & ``SUCCESS'' if the operation is successful.\newline
+		``FAIL'' if the operation is failed\newline
+		``ERROR'' if there is error\\\hline
+		message & string & & Human readable description of the result\\\hline
+	\end{tabular}
+	\section{albumcreate}
+	This API end point to create the album information.
+	\subsection{Parameters}
+	\begin{tabular}{|l|ll|p{10cm}|}
+		\hline
+		Name & Type & & Description\\\hline
+		sessionID & string & required & The assigned sessionID for this session\\\hline
+		album & string & required & The target album ID going to manipulates\\\hline
+		name & string & required & Set the name of the album. \\\hline
+		desc & string & optional & Set the description of the album. Defaults to an empty description.\\\hline
+		thumbnail & string& optional & Set the thumbnail of this album. The selected photo will provide the thumbnail for the album. A place-holder will become the thumbnail. \\\hline
+	\end{tabular}
+	\subsection{Return Value}
+	\begin{tabular}{|l|p{10cm}|l|}
+		\hline
+		HTTP Status Code & Meanings & Body content  \\\hline
+		200 & The operation is processed & JSON\\\hline
+%		403 & This album does not belong to the current user & Nil\\\hline
+		500 & This request is malformed & JSON\\\hline
+	\end{tabular}
+	\subsection{JSON structure}
+	\begin{tabular}{|l|l|l|p{10cm}|}
+		\hline
+		Name & Type & Sub-type & Description\\\hline
+		result & string & & ``SUCCESS'' if the operation is successful.\newline
+		``FAIL'' if the operation is failed\newline
+		``ERROR'' if there is error\\\hline
+		message & string & & Human readable description of the result\\\hline
+	\end{tabular}
 	
 	
 	\chapter{JSON object definition}
@@ -185,5 +313,6 @@
 		thumbnails & object & thumbnail & Selected thumbnail of the photo, \see{obj:thumbnail}\\\hline
 		size & number & & Size in bytes for the full photo\\\hline
 		url & URI & & URL for the photo, MUST be relative to the application base\\\hline
+		displaySeq  & number & & Display sequence for this image. Only available when requested as image list in an album.\\\hline
 	\end{tabular}
 \end{document}
